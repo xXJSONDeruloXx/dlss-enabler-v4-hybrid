@@ -79,7 +79,10 @@ echo "Checking for existing DLLs to backup..."
 backup_if_exists "$GAME_DIR/$INJECTION_DLL"
 
 # DLLs that games commonly ship with (but we might overwrite)
-backup_if_exists "$GAME_DIR/dxgi.dll"
+# Note: dxgi.dll backup only needed if using dxgi injection
+if [ "$INJECTION_METHOD" == "dxgi" ]; then
+    backup_if_exists "$GAME_DIR/dxgi.dll"
+fi
 backup_if_exists "$GAME_DIR/d3d11.dll"
 backup_if_exists "$GAME_DIR/d3d12.dll"
 
@@ -94,12 +97,6 @@ echo "Installing v3.x base runtime..."
 cp -v "$SCRIPT_DIR/_nvngx.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvngx-wrapper.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvapi64-proxy.dll" "$GAME_DIR/"
-
-# Only copy dxgi.dll if NOT using it for injection (conflict avoidance)
-if [ "$INJECTION_METHOD" != "dxgi" ]; then
-    cp -v "$SCRIPT_DIR/dxgi.dll" "$GAME_DIR/"
-fi
-
 cp -v "$SCRIPT_DIR/dlssg_to_fsr3_amd_is_better.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/dlss-finder.bin" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/dlss-enabler.log" "$GAME_DIR/"
@@ -147,15 +144,9 @@ echo ""
 
 # Build Wine override based on injection method
 WINE_OVERRIDE="${INJECTION_METHOD}=n,b;nvapi64=n,b"
-if [ "$INJECTION_METHOD" != "dxgi" ]; then
-    WINE_OVERRIDE="${WINE_OVERRIDE};dxgi=n,b"
-fi
 
 echo "WINEDLLOVERRIDES=\"${WINE_OVERRIDE}\" %COMMAND%"
 echo ""
 echo "Injection method: $INJECTION_DLL"
-if [ "$INJECTION_METHOD" == "dxgi" ]; then
-    echo "Note: dxgi.dll proxy skipped (using dxgi for injection)"
-fi
 echo ""
 echo "Check logs in game directory if issues occur."

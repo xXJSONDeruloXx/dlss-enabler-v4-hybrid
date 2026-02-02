@@ -42,13 +42,12 @@ WINEDLLOVERRIDES="version=n,b;nvapi64=n,b;dxgi=n,b" %COMMAND%
 ## Files Included
 
 ### DLSS Enabler v4.0
-- `version.dll` (27MB) - Main loader with OptiScaler built-in
+- `version.dll` (27MB) - Main loader with OptiScaler and DXGI hooks built-in
 
 ### DLSS Enabler v3.x Base Runtime
 - `_nvngx.dll` - NvAPI wrapper
 - `nvngx-wrapper.dll` - NvAPI wrapper
 - `nvapi64-proxy.dll` - NVIDIA API proxy
-- `dxgi.dll` - DirectX adapter proxy
 - `dlssg_to_fsr3_amd_is_better.dll` - FSR3 frame generation backend
 - `dlss-finder.bin` - DLSS library finder
 
@@ -120,9 +119,8 @@ This removes all DLSS Enabler files and restores backups automatically.
 
 ```bash
 cd /path/to/game
-rm -f version.dll _nvngx.dll nvngx-wrapper.dll nvapi64-proxy.dll \
-      dxgi.dll dlssg_to_fsr3_amd_is_better.dll dlss-finder.bin \
-      *.log nvngx.ini
+rm -f {injection_dll}.dll _nvngx.dll nvngx-wrapper.dll nvapi64-proxy.dll \
+      dlssg_to_fsr3_amd_is_better.dll dlss-finder.bin *.log nvngx.ini
 ```
 
 Then restore backups:

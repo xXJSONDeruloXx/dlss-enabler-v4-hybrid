@@ -15,7 +15,6 @@ This directory contains comprehensive reverse engineering documentation for all 
 - **[_nvngx.dll](_nvngx-dll.md)** - Primary NVSDK_NGX API wrapper for AMD/Intel GPU support (186 KB)
 - **[nvngx-wrapper.dll](nvngx-wrapper-dll.md)** - Secondary NGX wrapper layer for compatibility (186 KB)
 - **[nvapi64-proxy.dll](nvapi64-proxy-dll.md)** - NVIDIA API proxy with GPU identity spoofing (1.3 MB)
-- **[dxgi.dll](dxgi-dll.md)** - DirectX Graphics Infrastructure adapter proxy (72 KB)
 - **[dlssg_to_fsr3_amd_is_better.dll](dlssg_to_fsr3-dll.md)** - FSR3 frame generation backend by Nukem9 (2.9 MB)
 
 ### Utilities
@@ -27,12 +26,12 @@ This directory contains comprehensive reverse engineering documentation for all 
 ```
 Game with DLSS support
     ↓
-version.dll (injection: version/winmm/d3d11/etc.)
+version.dll (injection: version/winmm/d3d11/dxgi/etc.)
     ↓
     ├─→ OptiScaler (built-in upscaling)
+    ├─→ DXGI hooks (built-in adapter enumeration)
     ├─→ _nvngx.dll (NGX API wrapper)
     ├─→ nvapi64-proxy.dll (GPU spoofing)
-    ├─→ dxgi.dll (adapter enumeration)
     └─→ dlssg_to_fsr3_amd_is_better.dll (frame generation)
          ↓
     FSR 3.1 / XeSS output
@@ -42,11 +41,10 @@ version.dll (injection: version/winmm/d3d11/etc.)
 
 | Component | Purpose | Size | Required for AMD/Intel |
 |-----------|---------|------|------------------------|
-| version.dll | Main loader + OptiScaler | 27 MB | Yes |
+| version.dll | Main loader + OptiScaler + DXGI | 27 MB | Yes |
 | _nvngx.dll | NGX API wrapper | 186 KB | Yes |
 | nvngx-wrapper.dll | NGX compatibility layer | 186 KB | Yes |
 | nvapi64-proxy.dll | GPU spoofing | 1.3 MB | Yes |
-| dxgi.dll | Adapter proxy | 72 KB | Yes (unless dxgi injection) |
 | dlssg_to_fsr3_amd_is_better.dll | Frame generation | 2.9 MB | Yes |
 | dlss-finder.bin | DLSS scanner utility | 82 KB | No (diagnostic only) |
 

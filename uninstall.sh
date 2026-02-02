@@ -52,7 +52,6 @@ FILES_TO_REMOVE=(
     "_nvngx.dll"
     "nvngx-wrapper.dll"
     "nvapi64-proxy.dll"
-    "dxgi.dll"
     "dlssg_to_fsr3_amd_is_better.dll"
     "dlss-finder.bin"
     "dlss-enabler.log"
