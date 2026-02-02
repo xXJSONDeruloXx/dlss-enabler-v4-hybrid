@@ -123,4 +123,9 @@ fi
 echo "Uninstallation complete!"
 
 # Execute original command (without Wine overrides)
-exec "$@"
+# Filter out leading -- separators (from Steam launch options)
+while [[ $# -gt 0 && "$1" == "--" ]]; do
+  shift
+done
+
+"$@"

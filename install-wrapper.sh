@@ -160,4 +160,10 @@ echo "Installation complete!"
 
 # Execute original command with Wine overrides
 export WINEDLLOVERRIDES="${INJECTION_METHOD}=n,b;nvapi64=n,b${WINEDLLOVERRIDES:+,$WINEDLLOVERRIDES}"
-exec "$@"
+
+# Filter out leading -- separators (from Steam launch options)
+while [[ $# -gt 0 && "$1" == "--" ]]; do
+  shift
+done
+
+"$@"
