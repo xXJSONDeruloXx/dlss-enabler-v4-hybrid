@@ -1,0 +1,5 @@
+*.log
+*.ini
+.DS_Store
+.vscode/
+.idea/
