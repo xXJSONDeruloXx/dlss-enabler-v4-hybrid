@@ -10,34 +10,91 @@ Hybrid installation package combining DLSS Enabler v4.0 with v3.x base runtime f
 - Full AMD/Intel GPU support
 - Multiple DLL injection methods
 - Wine/Proton optimized
+- Automatic game detection (Unreal Engine + 11 hardcoded games)
+- Steam wrapper mode for one-click installation
 
-## Quick Start
+## Installation Methods
+
+### Method 1: One-Liner Setup (Recommended for Steam)
+
+Install to `~/dlss/` for Steam wrapper usage:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/xXJSONDeruloXx/dlss-enabler-v4-hybrid/main/setup.sh | bash
+```
+
+Then add to Steam launch options:
+
+```bash
+# Default (version.dll)
+~/dlss/install %command%
+
+# Specific injection method
+~/dlss/install --method=winmm %command%
+~/dlss/install --method=dxgi %command%
+
+# Per-method wrappers (alternative)
+~/dlss/install-winmm %command%
+~/dlss/install-dxgi %command%
+
+# Uninstall
+~/dlss/uninstall %command%
+```
+
+**Features:**
+- Automatic game directory detection
+- Supports Unreal Engine games
+- Hardcoded fixes for 11 common games (Cyberpunk, Witcher, etc.)
+- Backups original files automatically
+- One-line uninstall with backup restore
+
+### Method 2: Manual Installation (Traditional)
+
+For manual control or non-Steam launchers:
+
+```bash
+git clone https://github.com/xXJSONDeruloXx/dlss-enabler-v4-hybrid.git
+cd dlss-enabler-v4-hybrid
 ./install.sh /path/to/game [injection_method]
 ```
 
-Default injection method: `version`
+Then add to Steam/Heroic/Lutris launch options:
+
+```bash
+WINEDLLOVERRIDES="version=n,b;nvapi64=n,b" %COMMAND%
+```
 
 ## Injection Methods
 
-- `version` - Most games (default)
-- `winmm` - Cyberpunk 2077, games with existing version.dll
-- `d3d11` - DirectX 11 games
-- `d3d12` - DirectX 12 games
-- `dinput8` - DirectInput games
-- `dxgi` - DirectX Graphics Infrastructure
-- `wininet` - WinINet games
-- `winhttp` - WinHTTP games
-- `dbghelp` - Debug Help Library
+| Method | Use Case |
+|--------|----------|
+| `version` | Most games (default) |
+| `winmm` | Cyberpunk 2077, games with existing version.dll |
+| `d3d11` | DirectX 11 games |
+| `d3d12` | DirectX 12 games |
+| `dinput8` | DirectInput games |
+| `dxgi` | DirectX Graphics Infrastructure |
+| `wininet` | WinINet games |
+| `winhttp` | WinHTTP games |
+| `dbghelp` | Debug Help Library |
 
-## Steam Launch Options
+## Supported Games with Hardcoded Fixes
 
-Add to your game's launch options (script will show exact command):
+The wrapper scripts automatically handle launcher redirects for:
 
-```bash
-WINEDLLOVERRIDES="version=n,b;nvapi64=n,b;dxgi=n,b" %COMMAND%
-```
+1. **Cyberpunk 2077** - REDprelauncher → bin/x64/Cyberpunk2077.exe
+2. **Witcher 3** - REDprelauncher → bin/x64_dx12/witcher3.exe
+3. **Baldur's Gate 3** - LariLauncher → bin/bg3_dx11.exe
+4. **HITMAN 3 / World of Assassination** - Launcher → Retail/HITMAN3.exe
+5. **SYNCED** - sop_launcher → SYNCED.exe
+6. **2K Launcher Games** - LauncherPatcher → game exe
+7. **Warhammer 40,000: Darktide** - Launcher → binaries/Darktide.exe
+8. **Warhammer: Vermintide 2** - Launcher → binaries_dx12/vermintide2_dx12.exe
+9. **Satisfactory** - FactoryGameSteam → Engine/Binaries/Win64/FactoryGameSteam-Win64-Shipping.exe
+10. **Final Fantasy XIV** - ffxivboot → game/ffxiv_dx11.exe
+11. **Forza Horizon 5** - Auto-detected
+
+Plus automatic **Unreal Engine** game detection for any UE4/UE5 title.
 
 ## Files Included
 
@@ -50,6 +107,11 @@ WINEDLLOVERRIDES="version=n,b;nvapi64=n,b;dxgi=n,b" %COMMAND%
 - `nvapi64-proxy.dll` - NVIDIA API proxy
 - `dlssg_to_fsr3_amd_is_better.dll` - FSR3 frame generation backend
 - `dlss-finder.bin` - DLSS library finder
+
+### Wrapper Scripts (~/dlss/ installation only)
+- `install` - Main wrapper with flag support
+- `uninstall` - Uninstaller with backup restore
+- `install-{method}` - Per-method wrappers (9 variants)
 
 ## Configuration
 
@@ -80,19 +142,14 @@ Logs are created in game directory:
 - `dlssg-to-fsr3.log`
 - `nvngx.log`
 
-## Technical Details
-
-DLSS Enabler v4.0 is an experimental tech preview that:
-- Embeds OptiScaler for upscaling
-- Provides multi-frame generation beyond standard 2x
-- Includes context-aware artifact prevention
-- Supports runtime upscaler switching
-
-For AMD/Intel GPUs, v4.0 requires v3.x runtime files to provide NvAPI emulation and GPU spoofing.
+Check wrapper logs (Steam wrapper mode):
+```bash
+tail -f /tmp/fgmod-install.log  # If using wrapper
+```
 
 ## Backup and Restore
 
-The install script automatically backs up any existing game DLLs with `.bak` extension:
+All installation methods automatically back up existing game DLLs with `.bak` extension:
 - Injection DLL (version.dll, winmm.dll, etc.)
 - dxgi.dll (if game ships with one)
 - d3d11.dll / d3d12.dll (if present)
@@ -106,27 +163,71 @@ for f in *.bak; do mv "$f" "${f%.bak}"; done
 
 ## Uninstallation
 
-### Automatic (Recommended)
+### Steam Wrapper Mode
+
+Simply change launch options:
+```bash
+~/dlss/uninstall %command%
+```
+
+Run the game once, then remove the launch option.
+
+### Manual Installation
 
 ```bash
-cd /path/to/dlss-enabler-v4-hybrid
+cd ~/dlss  # or wherever you cloned
 ./uninstall.sh /path/to/game [injection_method]
 ```
 
 This removes all DLSS Enabler files and restores backups automatically.
 
-### Manual
+### Complete Removal (Wrapper Mode)
 
 ```bash
-cd /path/to/game
-rm -f {injection_dll}.dll _nvngx.dll nvngx-wrapper.dll nvapi64-proxy.dll \
-      dlssg_to_fsr3_amd_is_better.dll dlss-finder.bin *.log nvngx.ini
+rm -rf ~/dlss
 ```
 
-Then restore backups:
-```bash
-for f in *.bak; do mv "$f" "${f%.bak}"; done
+Then restore backups manually in each game directory.
+
+## Technical Details
+
+DLSS Enabler v4.0 is an experimental tech preview that:
+- Embeds OptiScaler for upscaling
+- Provides multi-frame generation beyond standard 2x
+- Includes context-aware artifact prevention
+- Supports runtime upscaler switching
+
+For AMD/Intel GPUs, v4.0 requires v3.x runtime files to provide NvAPI emulation and GPU spoofing.
+
+### Architecture
+
 ```
+Game Launch → Wrapper Script
+    ↓
+Detect game directory (args, env vars, UE detection, hardcoded fixes)
+    ↓
+Copy DLLs to game directory
+    ↓
+Backup existing DLLs (.bak)
+    ↓
+Rename version.dll → injection_method.dll
+    ↓
+Set WINEDLLOVERRIDES
+    ↓
+Launch game
+```
+
+## Comparison: Wrapper vs Manual
+
+| Feature | Wrapper Mode | Manual Mode |
+|---------|-------------|-------------|
+| Installation | One-liner curl | Git clone |
+| Per-game setup | Steam launch option | Run script per game |
+| Game detection | Automatic | Manual path |
+| Launcher fixes | Built-in (11 games) | Manual |
+| UE game detection | Automatic | Manual |
+| Uninstall | One launch | Run uninstall.sh |
+| Cross-launcher | Steam-focused | Universal |
 
 ## License
 
@@ -140,3 +241,7 @@ This is a redistribution package. Original components:
 DLSS Enabler v4.0 is experimental and not recommended for production gaming. Use at your own risk.
 
 For stable alternative, use OptiScaler v0.9.0 standalone.
+
+## Credits
+
+Inspired by [Decky-Framegen](https://github.com/xXJSONDeruloXx/Decky-Framegen) and [fgmod](https://github.com/FakeMichau/fgmod).
