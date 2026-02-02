@@ -52,21 +52,45 @@ if [ ! -f "$V4_DLL" ]; then
     exit 1
 fi
 
-if [ -f "$GAME_DIR/$INJECTION_DLL" ]; then
-    echo "Warning: $INJECTION_DLL exists in game directory"
-    read -p "Overwrite? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
+# Function to backup a file if it exists
+backup_if_exists() {
+    local file="$1"
+    if [ -f "$file" ]; then
+        # Skip if it's already a backup file
+        if [[ "$file" == *.bak ]]; then
+            return
+        fi
+        
+        local backup="${file}.bak"
+        echo "Backing up: $(basename "$file") -> $(basename "$backup")"
+        cp "$file" "$backup"
     fi
-fi
+}
 
 echo "Installing DLSS Enabler v4.0 Hybrid..."
 echo "Target: $GAME_DIR"
 echo "Injection: $INJECTION_DLL"
 echo ""
 
+# Backup existing files that we're about to overwrite
+echo "Checking for existing DLLs to backup..."
+
+# Injection DLL (game might ship with version.dll, winmm.dll, etc.)
+backup_if_exists "$GAME_DIR/$INJECTION_DLL"
+
+# DLLs that games commonly ship with (but we might overwrite)
+backup_if_exists "$GAME_DIR/dxgi.dll"
+backup_if_exists "$GAME_DIR/d3d11.dll"
+backup_if_exists "$GAME_DIR/d3d12.dll"
+
+# Less common but possible
+backup_if_exists "$GAME_DIR/nvapi64.dll"
+backup_if_exists "$GAME_DIR/nvapi64-proxy.dll"
+
+echo ""
+
 # Copy v3.x base files
+echo "Installing v3.x base runtime..."
 cp -v "$SCRIPT_DIR/_nvngx.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvngx-wrapper.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvapi64-proxy.dll" "$GAME_DIR/"
@@ -83,6 +107,8 @@ cp -v "$SCRIPT_DIR/dlssg-to-fsr3.log" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvngx.log" "$GAME_DIR/"
 
 # Copy v4.0 as injection DLL
+echo ""
+echo "Installing v4.0 injection DLL..."
 cp -v "$V4_DLL" "$GAME_DIR/$INJECTION_DLL"
 
 # Create default config if needed
@@ -103,6 +129,19 @@ fi
 echo ""
 echo "Installation complete."
 echo ""
+
+# List backup files created
+BACKUP_COUNT=$(find "$GAME_DIR" -maxdepth 1 -name "*.bak" -type f | wc -l)
+if [ "$BACKUP_COUNT" -gt 0 ]; then
+    echo "Backups created:"
+    ls -lh "$GAME_DIR"/*.bak 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
+    echo ""
+    echo "To restore original files:"
+    echo "  cd \"$GAME_DIR\""
+    echo "  for f in *.bak; do mv \"\$f\" \"\${f%.bak}\"; done"
+    echo ""
+fi
+
 echo "Add to Steam launch options:"
 echo ""
 

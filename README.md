@@ -91,9 +91,32 @@ DLSS Enabler v4.0 is an experimental tech preview that:
 
 For AMD/Intel GPUs, v4.0 requires v3.x runtime files to provide NvAPI emulation and GPU spoofing.
 
+## Backup and Restore
+
+The install script automatically backs up any existing game DLLs with `.bak` extension:
+- Injection DLL (version.dll, winmm.dll, etc.)
+- dxgi.dll (if game ships with one)
+- d3d11.dll / d3d12.dll (if present)
+- nvapi64.dll / nvapi64-proxy.dll (if present)
+
+To restore original files manually:
+```bash
+cd /path/to/game
+for f in *.bak; do mv "$f" "${f%.bak}"; done
+```
+
 ## Uninstallation
 
-Remove installed files from game directory:
+### Automatic (Recommended)
+
+```bash
+cd /path/to/dlss-enabler-v4-hybrid
+./uninstall.sh /path/to/game [injection_method]
+```
+
+This removes all DLSS Enabler files and restores backups automatically.
+
+### Manual
 
 ```bash
 cd /path/to/game
@@ -102,7 +125,10 @@ rm -f version.dll _nvngx.dll nvngx-wrapper.dll nvapi64-proxy.dll \
       *.log nvngx.ini
 ```
 
-Or remove the injection DLL you used (winmm.dll, d3d11.dll, etc.)
+Then restore backups:
+```bash
+for f in *.bak; do mv "$f" "${f%.bak}"; done
+```
 
 ## License
 
