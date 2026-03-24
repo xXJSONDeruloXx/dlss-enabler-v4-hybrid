@@ -1,7 +1,10 @@
 #!/bin/bash
-# OptiScaler package uninstaller
+# DLSS Enabler v4.0 Hybrid Uninstaller
+# Removes all DLSS Enabler files and restores backups
 
 set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
     echo "Usage: $0 <game_directory> [injection_method]"
@@ -23,11 +26,12 @@ fi
 GAME_DIR="$1"
 INJECTION_METHOD="${2:-version}"
 INJECTION_DLL="${INJECTION_METHOD}.dll"
-VALID_METHODS=("version" "winmm" "d3d11" "d3d12" "dinput8" "dxgi" "wininet" "winhttp" "dbghelp")
 
-if [[ ! " ${VALID_METHODS[*]} " =~ " ${INJECTION_METHOD} " ]]; then
+# Validate injection method
+VALID_METHODS=("version" "winmm" "d3d11" "d3d12" "dinput8" "dxgi" "wininet" "winhttp" "dbghelp")
+if [[ ! " ${VALID_METHODS[@]} " =~ " ${INJECTION_METHOD} " ]]; then
     echo "Error: Invalid injection method: $INJECTION_METHOD"
-    echo "Valid methods: ${VALID_METHODS[*]}"
+    echo "Valid methods: ${VALID_METHODS[@]}"
     exit 1
 fi
 
@@ -36,29 +40,24 @@ if [ ! -d "$GAME_DIR" ]; then
     exit 1
 fi
 
-echo "Uninstalling OptiScaler package..."
+echo "Uninstalling DLSS Enabler v4.0 Hybrid..."
 echo "Target: $GAME_DIR"
 echo "Injection method: $INJECTION_DLL"
 echo ""
 
+# List files to be removed
 echo "Files to remove:"
 FILES_TO_REMOVE=(
     "$INJECTION_DLL"
-    "fakenvapi.dll"
-    "fakenvapi.ini"
-    "fakenvapi.log"
+    "_nvngx.dll"
+    "nvngx-wrapper.dll"
+    "nvapi64-proxy.dll"
     "dlssg_to_fsr3_amd_is_better.dll"
-    "dlssg_to_fsr3.log"
-    "OptiScaler.ini"
-    "OptiScaler.log"
-    "libxell.dll"
-    "libxess.dll"
-    "libxess_dx11.dll"
-    "libxess_fg.dll"
-    "amd_fidelityfx_dx12.dll"
-    "amd_fidelityfx_framegeneration_dx12.dll"
-    "amd_fidelityfx_upscaler_dx12.dll"
-    "amd_fidelityfx_vk.dll"
+    "dlss-finder.bin"
+    "dlss-enabler.log"
+    "dlssg-to-fsr3.log"
+    "nvngx.log"
+    "nvngx.ini"
 )
 
 for file in "${FILES_TO_REMOVE[@]}"; do
@@ -66,8 +65,6 @@ for file in "${FILES_TO_REMOVE[@]}"; do
         echo "  $file"
     fi
 done
-if [ -d "$GAME_DIR/D3D12_Optiscaler" ]; then echo "  D3D12_Optiscaler/"; fi
-if [ -d "$GAME_DIR/plugins" ]; then echo "  plugins/"; fi
 
 echo ""
 read -p "Proceed with uninstallation? (y/N) " -n 1 -r
@@ -77,6 +74,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
+# Remove DLSS Enabler files
 echo ""
 echo "Removing files..."
 for file in "${FILES_TO_REMOVE[@]}"; do
@@ -85,9 +83,7 @@ for file in "${FILES_TO_REMOVE[@]}"; do
     fi
 done
 
-rm -rf "$GAME_DIR/D3D12_Optiscaler"
-rm -rf "$GAME_DIR/plugins"
-
+# Restore backups
 echo ""
 BACKUP_COUNT=$(find "$GAME_DIR" -maxdepth 1 -name "*.bak" -type f 2>/dev/null | wc -l)
 if [ "$BACKUP_COUNT" -gt 0 ]; then
@@ -105,3 +101,5 @@ fi
 
 echo ""
 echo "Uninstallation complete."
+echo ""
+echo "Game should now run with original DLLs."

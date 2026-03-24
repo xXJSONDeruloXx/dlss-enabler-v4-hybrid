@@ -1,5 +1,6 @@
 #!/bin/bash
-# OptiScaler package installer
+# DLSS Enabler v4.0 + v3.x Hybrid Installer
+# Linux + AMD GPU support
 
 set -e
 
@@ -11,6 +12,12 @@ usage() {
     echo "Arguments:"
     echo "  game_directory    Path to game root (where .exe is located)"
     echo "  injection_method  version|winmm|d3d11|d3d12|dinput8|dxgi|wininet|winhttp|dbghelp (default: version)"
+    echo ""
+    echo "Common methods by game:"
+    echo "  version   - Most games (default)"
+    echo "  winmm     - Cyberpunk 2077, games with existing version.dll"
+    echo "  d3d11     - DX11 games"
+    echo "  d3d12     - DX12 games"
     echo ""
     echo "Example:"
     echo "  $0 ~/.steam/steam/steamapps/common/GameName"
@@ -25,11 +32,12 @@ fi
 GAME_DIR="$1"
 INJECTION_METHOD="${2:-version}"
 INJECTION_DLL="${INJECTION_METHOD}.dll"
-VALID_METHODS=("version" "winmm" "d3d11" "d3d12" "dinput8" "dxgi" "wininet" "winhttp" "dbghelp")
 
-if [[ ! " ${VALID_METHODS[*]} " =~ " ${INJECTION_METHOD} " ]]; then
+# Validate injection method
+VALID_METHODS=("version" "winmm" "d3d11" "d3d12" "dinput8" "dxgi" "wininet" "winhttp" "dbghelp")
+if [[ ! " ${VALID_METHODS[@]} " =~ " ${INJECTION_METHOD} " ]]; then
     echo "Error: Invalid injection method: $INJECTION_METHOD"
-    echo "Valid methods: ${VALID_METHODS[*]}"
+    echo "Valid methods: ${VALID_METHODS[@]}"
     exit 1
 fi
 
@@ -38,88 +46,107 @@ if [ ! -d "$GAME_DIR" ]; then
     exit 1
 fi
 
-if [ ! -f "$SCRIPT_DIR/version.dll" ]; then
+V4_DLL="$SCRIPT_DIR/version.dll"
+if [ ! -f "$V4_DLL" ]; then
     echo "Error: version.dll not found in $SCRIPT_DIR"
     exit 1
 fi
 
+# Function to backup a file if it exists
 backup_if_exists() {
     local file="$1"
-    if [ -f "$file" ] && [[ ! "$file" == *.bak ]]; then
-        local backup="${file}.bak"
-        if [ ! -f "$backup" ]; then
-            echo "Backing up: $(basename "$file") -> $(basename "$backup")"
-            cp "$file" "$backup"
+    if [ -f "$file" ]; then
+        # Skip if it's already a backup file
+        if [[ "$file" == *.bak ]]; then
+            return
         fi
+        
+        local backup="${file}.bak"
+        echo "Backing up: $(basename "$file") -> $(basename "$backup")"
+        cp "$file" "$backup"
     fi
 }
 
-CONFIG_FILES=(
-    "OptiScaler.ini"
-    "fakenvapi.ini"
-)
-
-RUNTIME_FILES=(
-    "fakenvapi.dll"
-    "dlssg_to_fsr3_amd_is_better.dll"
-    "libxell.dll"
-    "libxess.dll"
-    "libxess_dx11.dll"
-    "libxess_fg.dll"
-    "amd_fidelityfx_dx12.dll"
-    "amd_fidelityfx_framegeneration_dx12.dll"
-    "amd_fidelityfx_upscaler_dx12.dll"
-    "amd_fidelityfx_vk.dll"
-)
-
-echo "Installing OptiScaler package..."
+echo "Installing DLSS Enabler v4.0 Hybrid..."
 echo "Target: $GAME_DIR"
 echo "Injection: $INJECTION_DLL"
 echo ""
-echo "Checking for existing files to backup..."
 
+# Backup existing files that we're about to overwrite
+echo "Checking for existing DLLs to backup..."
+
+# Injection DLL (game might ship with version.dll, winmm.dll, etc.)
 backup_if_exists "$GAME_DIR/$INJECTION_DLL"
-backup_if_exists "$GAME_DIR/d3d11.dll"
-backup_if_exists "$GAME_DIR/d3d12.dll"
-if [ "$INJECTION_METHOD" = "dxgi" ]; then
+
+# DLLs that games commonly ship with (but we might overwrite)
+# Note: dxgi.dll backup only needed if using dxgi injection
+if [ "$INJECTION_METHOD" == "dxgi" ]; then
     backup_if_exists "$GAME_DIR/dxgi.dll"
 fi
-for file in "${RUNTIME_FILES[@]}" "${CONFIG_FILES[@]}"; do
-    backup_if_exists "$GAME_DIR/$file"
-done
+backup_if_exists "$GAME_DIR/d3d11.dll"
+backup_if_exists "$GAME_DIR/d3d12.dll"
+
+# Less common but possible
+backup_if_exists "$GAME_DIR/nvapi64.dll"
+backup_if_exists "$GAME_DIR/nvapi64-proxy.dll"
 
 echo ""
-echo "Installing runtime files..."
-for file in "${RUNTIME_FILES[@]}"; do
-    cp -v "$SCRIPT_DIR/$file" "$GAME_DIR/"
-done
 
-for file in "${CONFIG_FILES[@]}"; do
-    if [ ! -f "$GAME_DIR/$file" ]; then
-        cp -v "$SCRIPT_DIR/$file" "$GAME_DIR/"
-    fi
-done
+# Copy v3.x base files
+echo "Installing v3.x base runtime..."
+cp -v "$SCRIPT_DIR/_nvngx.dll" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/nvngx-wrapper.dll" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/nvapi64-proxy.dll" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/dlssg_to_fsr3_amd_is_better.dll" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/dlss-finder.bin" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/dlss-enabler.log" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/dlssg-to-fsr3.log" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/nvngx.log" "$GAME_DIR/"
 
-mkdir -p "$GAME_DIR/D3D12_Optiscaler" "$GAME_DIR/plugins"
-cp -v "$SCRIPT_DIR/D3D12_Optiscaler/D3D12Core.dll" "$GAME_DIR/D3D12_Optiscaler/"
-cp -v "$SCRIPT_DIR/plugins/OptiPatcher.asi" "$GAME_DIR/plugins/"
-
+# Copy v4.0 as injection DLL
 echo ""
-echo "Installing injection DLL..."
-cp -v "$SCRIPT_DIR/version.dll" "$GAME_DIR/$INJECTION_DLL"
+echo "Installing v4.0 injection DLL..."
+cp -v "$V4_DLL" "$GAME_DIR/$INJECTION_DLL"
+
+# Create default config if needed
+if [ ! -f "$GAME_DIR/nvngx.ini" ]; then
+    cat > "$GAME_DIR/nvngx.ini" << 'EOF'
+[DLSS]
+Enabled = true
+
+[DLSSG]
+Enabled = true
+
+[Logging]
+Enabled = true
+EOF
+    echo "Created: nvngx.ini"
+fi
 
 echo ""
 echo "Installation complete."
 echo ""
 
+# List backup files created
 BACKUP_COUNT=$(find "$GAME_DIR" -maxdepth 1 -name "*.bak" -type f | wc -l)
 if [ "$BACKUP_COUNT" -gt 0 ]; then
     echo "Backups created:"
     ls -lh "$GAME_DIR"/*.bak 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
     echo ""
+    echo "To restore original files:"
+    echo "  cd \"$GAME_DIR\""
+    echo "  for f in *.bak; do mv \"\$f\" \"\${f%.bak}\"; done"
+    echo ""
 fi
 
 echo "Add to Steam launch options:"
-echo "WINEDLLOVERRIDES=\"${INJECTION_METHOD}=n,b\" %COMMAND%"
 echo ""
-echo "Insert opens OptiScaler overlay; Page Up/Down toggles performance stats."
+
+# Build Wine override based on injection method
+WINE_OVERRIDE="${INJECTION_METHOD}=n,b;nvapi64=n,b"
+
+echo "WINEDLLOVERRIDES=\"${WINE_OVERRIDE}\" %COMMAND%"
+echo ""
+echo "Injection method: $INJECTION_DLL"
+echo ""
+echo "Check logs in game directory if issues occur."

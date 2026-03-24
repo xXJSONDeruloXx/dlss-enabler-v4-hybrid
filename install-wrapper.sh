@@ -1,30 +1,38 @@
 #!/usr/bin/env bash
-# OptiScaler wrapper mode
+# DLSS Enabler v4.0 Hybrid - Wrapper Mode
 # Usage: ~/dlss/install [--method=METHOD] %command%
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Default injection method
 INJECTION_METHOD="version"
 
+# Parse arguments
 for arg in "$@"; do
   if [[ "$arg" == --method=* ]]; then
     INJECTION_METHOD="${arg#--method=}"
   fi
 done
 
+# Validate injection method
 VALID_METHODS=("version" "winmm" "d3d11" "d3d12" "dinput8" "dxgi" "wininet" "winhttp" "dbghelp")
-if [[ ! " ${VALID_METHODS[*]} " =~ " ${INJECTION_METHOD} " ]]; then
+if [[ ! " ${VALID_METHODS[@]} " =~ " ${INJECTION_METHOD} " ]]; then
   echo "Error: Invalid injection method: $INJECTION_METHOD"
-  echo "Valid methods: ${VALID_METHODS[*]}"
+  echo "Valid methods: ${VALID_METHODS[@]}"
   exit 1
 fi
 
 INJECTION_DLL="${INJECTION_METHOD}.dll"
+
+# === Resolve Game Path ===
 exe_folder_path=""
 
+# Extract .exe from command-line arguments
 for arg in "$@"; do
   if [[ "$arg" == *.exe ]]; then
+    # Hardcoded game launcher redirects
     case "$arg" in
       *"Cyberpunk 2077"*)
         arg="${arg//REDprelauncher.exe/bin/x64/Cyberpunk2077.exe}"
@@ -60,25 +68,30 @@ for arg in "$@"; do
         arg="${arg//ForzaHorizon5.exe/ForzaHorizon5.exe}"
         ;;
     esac
-
+    
     exe_folder_path=$(dirname "$arg")
     break
   fi
 done
 
-if [[ -z "$exe_folder_path" && -n "$STEAM_COMPAT_INSTALL_PATH" ]]; then
+# Fallback to STEAM_COMPAT_INSTALL_PATH
+if [[ -z "$exe_folder_path" ]] && [[ -n "$STEAM_COMPAT_INSTALL_PATH" ]]; then
   exe_folder_path="$STEAM_COMPAT_INSTALL_PATH"
 fi
 
+# Detect Unreal Engine games
 if [[ -d "$exe_folder_path/Engine" ]]; then
   echo "Unreal Engine game detected, searching for game executable..."
-  ue_exe=$(find "$exe_folder_path" -maxdepth 4 -mindepth 4 -path "*/Binaries/Win64/*.exe" -not -path "*/Engine/*" | head -1)
+  ue_exe=$(find "$exe_folder_path" -maxdepth 4 -mindepth 4 \
+    -path "*/Binaries/Win64/*.exe" -not -path "*/Engine/*" | head -1)
+  
   if [[ -n "$ue_exe" ]]; then
     exe_folder_path=$(dirname "$ue_exe")
     echo "Using UE game binary directory: $exe_folder_path"
   fi
 fi
 
+# Validate directory
 if [[ ! -d "$exe_folder_path" ]]; then
   echo "Error: Could not resolve game directory!"
   exit 1
@@ -89,12 +102,13 @@ if [[ ! -w "$exe_folder_path" ]]; then
   exit 1
 fi
 
-echo "Installing OptiScaler package to: $exe_folder_path"
+echo "Installing DLSS Enabler v4.0 Hybrid to: $exe_folder_path"
 echo "Injection method: $INJECTION_DLL"
 
+# Function to backup a file if it exists
 backup_if_exists() {
   local file="$1"
-  if [[ -f "$file" && ! "$file" == *.bak ]]; then
+  if [[ -f "$file" ]] && [[ ! "$file" == *.bak ]]; then
     local backup="${file}.bak"
     if [[ ! -f "$backup" ]]; then
       echo "Backing up: $(basename "$file")"
@@ -103,63 +117,53 @@ backup_if_exists() {
   fi
 }
 
-CONFIG_FILES=(
-  "OptiScaler.ini"
-  "fakenvapi.ini"
-)
-
-RUNTIME_FILES=(
-  "fakenvapi.dll"
-  "dlssg_to_fsr3_amd_is_better.dll"
-  "libxell.dll"
-  "libxess.dll"
-  "libxess_dx11.dll"
-  "libxess_fg.dll"
-  "amd_fidelityfx_dx12.dll"
-  "amd_fidelityfx_framegeneration_dx12.dll"
-  "amd_fidelityfx_upscaler_dx12.dll"
-  "amd_fidelityfx_vk.dll"
-)
-
-for file in "$exe_folder_path/$INJECTION_DLL" "$exe_folder_path/d3d11.dll" "$exe_folder_path/d3d12.dll"; do
-  backup_if_exists "$file"
-done
+# Backup existing files
+backup_if_exists "$exe_folder_path/$INJECTION_DLL"
 if [[ "$INJECTION_METHOD" == "dxgi" ]]; then
   backup_if_exists "$exe_folder_path/dxgi.dll"
 fi
-for file in "${RUNTIME_FILES[@]}" "${CONFIG_FILES[@]}"; do
-  backup_if_exists "$exe_folder_path/$file"
-done
+backup_if_exists "$exe_folder_path/d3d11.dll"
+backup_if_exists "$exe_folder_path/d3d12.dll"
+backup_if_exists "$exe_folder_path/nvapi64.dll"
+backup_if_exists "$exe_folder_path/nvapi64-proxy.dll"
 
-for file in "${RUNTIME_FILES[@]}"; do
-  cp -f "$SCRIPT_DIR/$file" "$exe_folder_path/"
-done
+# Copy v3.x base files
+cp -f "$SCRIPT_DIR/_nvngx.dll" "$exe_folder_path/"
+cp -f "$SCRIPT_DIR/nvngx-wrapper.dll" "$exe_folder_path/"
+cp -f "$SCRIPT_DIR/nvapi64-proxy.dll" "$exe_folder_path/"
+cp -f "$SCRIPT_DIR/dlssg_to_fsr3_amd_is_better.dll" "$exe_folder_path/"
+cp -f "$SCRIPT_DIR/dlss-finder.bin" "$exe_folder_path/"
 
-for file in "${CONFIG_FILES[@]}"; do
-  if [[ ! -f "$exe_folder_path/$file" ]]; then
-    cp "$SCRIPT_DIR/$file" "$exe_folder_path/"
-  fi
-done
+# Copy placeholder logs
+cp -f "$SCRIPT_DIR/dlss-enabler.log" "$exe_folder_path/" 2>/dev/null || touch "$exe_folder_path/dlss-enabler.log"
+cp -f "$SCRIPT_DIR/dlssg-to-fsr3.log" "$exe_folder_path/" 2>/dev/null || touch "$exe_folder_path/dlssg-to-fsr3.log"
+cp -f "$SCRIPT_DIR/nvngx.log" "$exe_folder_path/" 2>/dev/null || touch "$exe_folder_path/nvngx.log"
 
-mkdir -p "$exe_folder_path/D3D12_Optiscaler" "$exe_folder_path/plugins"
-cp -f "$SCRIPT_DIR/D3D12_Optiscaler/D3D12Core.dll" "$exe_folder_path/D3D12_Optiscaler/"
-cp -f "$SCRIPT_DIR/plugins/OptiPatcher.asi" "$exe_folder_path/plugins/"
+# Copy v4.0 as injection DLL
 cp -f "$SCRIPT_DIR/version.dll" "$exe_folder_path/$INJECTION_DLL"
+
+# Create default config if needed
+if [[ ! -f "$exe_folder_path/nvngx.ini" ]]; then
+  cat > "$exe_folder_path/nvngx.ini" << 'EOF'
+[DLSS]
+Enabled = true
+
+[DLSSG]
+Enabled = true
+
+[Logging]
+Enabled = true
+EOF
+fi
 
 echo "Installation complete!"
 
-export WINEDLLOVERRIDES="${INJECTION_METHOD}=n,b${WINEDLLOVERRIDES:+,$WINEDLLOVERRIDES}"
+# Execute original command with Wine overrides
+export WINEDLLOVERRIDES="${INJECTION_METHOD}=n,b;nvapi64=n,b${WINEDLLOVERRIDES:+,$WINEDLLOVERRIDES}"
 
-FILTERED_ARGS=()
-for arg in "$@"; do
-  if [[ "$arg" == --method=* ]]; then
-    continue
-  fi
-  FILTERED_ARGS+=("$arg")
+# Filter out leading -- separators (from Steam launch options)
+while [[ $# -gt 0 && "$1" == "--" ]]; do
+  shift
 done
 
-while [[ ${#FILTERED_ARGS[@]} -gt 0 && "${FILTERED_ARGS[0]}" == "--" ]]; do
-  FILTERED_ARGS=("${FILTERED_ARGS[@]:1}")
-done
-
-"${FILTERED_ARGS[@]}"
+"$@"

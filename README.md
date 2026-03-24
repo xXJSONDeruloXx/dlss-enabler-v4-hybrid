@@ -61,7 +61,7 @@ cd dlss-enabler-v4-hybrid
 Then add to Steam/Heroic/Lutris launch options:
 
 ```bash
-WINEDLLOVERRIDES="version=n,b" %COMMAND%
+WINEDLLOVERRIDES="version=n,b;nvapi64=n,b" %COMMAND%
 ```
 
 ## Injection Methods
@@ -98,22 +98,15 @@ Plus automatic **Unreal Engine** game detection for any UE4/UE5 title.
 
 ## Files Included
 
-### Main Loader
-- `version.dll` (24MB) - OptiScaler loader renamed for wrapper injection
+### DLSS Enabler v4.0
+- `version.dll` (28MB) - Main loader with OptiScaler and DXGI hooks built-in
 
-### Runtime Files
-- `fakenvapi.dll` - NVAPI compatibility layer
-- `dlssg_to_fsr3_amd_is_better.dll` - Nukem FG backend
-- `libxell.dll` - XeLL runtime
-- `libxess.dll` - XeSS runtime
-- `libxess_dx11.dll` - XeSS DX11 runtime
-- `libxess_fg.dll` - XeSS frame generation runtime
-- `amd_fidelityfx_dx12.dll` - FidelityFX DX12 bridge
-- `amd_fidelityfx_framegeneration_dx12.dll` - FidelityFX frame generation runtime
-- `amd_fidelityfx_upscaler_dx12.dll` - FidelityFX upscaler runtime
-- `amd_fidelityfx_vk.dll` - FidelityFX Vulkan runtime
-- `D3D12_Optiscaler/D3D12Core.dll` - D3D12 agility helper
-- `plugins/OptiPatcher.asi` - Optional Opti patcher plugin
+### DLSS Enabler v3.x Base Runtime
+- `_nvngx.dll` - NvAPI wrapper
+- `nvngx-wrapper.dll` - NvAPI wrapper
+- `nvapi64-proxy.dll` - NVIDIA API proxy
+- `dlssg_to_fsr3_amd_is_better.dll` - FSR3 frame generation backend
+- `dlss-finder.bin` - DLSS library finder
 
 ### Wrapper Scripts (~/dlss/ installation only)
 - `install` - Main wrapper with flag support
@@ -122,9 +115,18 @@ Plus automatic **Unreal Engine** game detection for any UE4/UE5 title.
 
 ## Configuration
 
-If missing, the installer copies default configs to the game directory:
-- `OptiScaler.ini`
-- `fakenvapi.ini`
+Optional `nvngx.ini` will be created in game directory:
+
+```ini
+[DLSS]
+Enabled = true
+
+[DLSSG]
+Enabled = true
+
+[Logging]
+Enabled = true
+```
 
 ## Requirements
 
@@ -136,11 +138,14 @@ If missing, the installer copies default configs to the game directory:
 ## Troubleshooting
 
 Logs are created in game directory:
-- `OptiScaler.log`
-- `fakenvapi.log`
-- `dlssg_to_fsr3.log`
+- `dlss-enabler.log`
+- `dlssg-to-fsr3.log`
+- `nvngx.log`
 
-The OptiScaler overlay can usually be opened with `Insert`.
+Check wrapper logs (Steam wrapper mode):
+```bash
+tail -f /tmp/fgmod-install.log  # If using wrapper
+```
 
 ## Backup and Restore
 
@@ -148,7 +153,7 @@ All installation methods automatically back up existing game DLLs with `.bak` ex
 - Injection DLL (version.dll, winmm.dll, etc.)
 - dxgi.dll (if game ships with one)
 - d3d11.dll / d3d12.dll (if present)
-- fakenvapi.dll and OptiScaler config files (if present)
+- nvapi64.dll / nvapi64-proxy.dll (if present)
 
 To restore original files manually:
 ```bash
