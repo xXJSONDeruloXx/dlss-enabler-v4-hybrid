@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
-# DLSS Enabler v4.0 Hybrid - Uninstall Wrapper
+# OptiScaler wrapper mode uninstaller
 # Usage: ~/dlss/uninstall %command%
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# === Resolve Game Path ===
 exe_folder_path=""
 
-# Extract .exe from command-line arguments
 for arg in "$@"; do
   if [[ "$arg" == *.exe ]]; then
-    # Hardcoded game launcher redirects (same as install)
     case "$arg" in
       *"Cyberpunk 2077"*)
         arg="${arg//REDprelauncher.exe/bin/x64/Cyberpunk2077.exe}"
@@ -48,36 +44,30 @@ for arg in "$@"; do
         arg="${arg//ForzaHorizon5.exe/ForzaHorizon5.exe}"
         ;;
     esac
-    
+
     exe_folder_path=$(dirname "$arg")
     break
   fi
 done
 
-# Fallback to STEAM_COMPAT_INSTALL_PATH
-if [[ -z "$exe_folder_path" ]] && [[ -n "$STEAM_COMPAT_INSTALL_PATH" ]]; then
+if [[ -z "$exe_folder_path" && -n "$STEAM_COMPAT_INSTALL_PATH" ]]; then
   exe_folder_path="$STEAM_COMPAT_INSTALL_PATH"
 fi
 
-# Detect Unreal Engine games
 if [[ -d "$exe_folder_path/Engine" ]]; then
-  ue_exe=$(find "$exe_folder_path" -maxdepth 4 -mindepth 4 \
-    -path "*/Binaries/Win64/*.exe" -not -path "*/Engine/*" | head -1)
-  
+  ue_exe=$(find "$exe_folder_path" -maxdepth 4 -mindepth 4 -path "*/Binaries/Win64/*.exe" -not -path "*/Engine/*" | head -1)
   if [[ -n "$ue_exe" ]]; then
     exe_folder_path=$(dirname "$ue_exe")
   fi
 fi
 
-# Validate directory
 if [[ ! -d "$exe_folder_path" ]]; then
   echo "Error: Could not resolve game directory!"
   exit 1
 fi
 
-echo "Uninstalling DLSS Enabler v4.0 Hybrid from: $exe_folder_path"
+echo "Uninstalling OptiScaler package from: $exe_folder_path"
 
-# Remove DLSS Enabler files
 FILES_TO_REMOVE=(
   "version.dll"
   "winmm.dll"
@@ -88,13 +78,26 @@ FILES_TO_REMOVE=(
   "wininet.dll"
   "winhttp.dll"
   "dbghelp.dll"
+  "fakenvapi.dll"
+  "fakenvapi.ini"
+  "fakenvapi.log"
+  "dlssg_to_fsr3_amd_is_better.dll"
+  "dlssg_to_fsr3.log"
+  "OptiScaler.ini"
+  "OptiScaler.log"
+  "libxell.dll"
+  "libxess.dll"
+  "libxess_dx11.dll"
+  "libxess_fg.dll"
+  "amd_fidelityfx_dx12.dll"
+  "amd_fidelityfx_framegeneration_dx12.dll"
+  "amd_fidelityfx_upscaler_dx12.dll"
+  "amd_fidelityfx_vk.dll"
   "_nvngx.dll"
   "nvngx-wrapper.dll"
   "nvapi64-proxy.dll"
-  "dlssg_to_fsr3_amd_is_better.dll"
   "dlss-finder.bin"
   "dlss-enabler.log"
-  "dlssg-to-fsr3.log"
   "nvngx.log"
   "nvngx.ini"
 )
@@ -106,7 +109,9 @@ for file in "${FILES_TO_REMOVE[@]}"; do
   fi
 done
 
-# Restore backups
+rm -rf "$exe_folder_path/D3D12_Optiscaler"
+rm -rf "$exe_folder_path/plugins"
+
 if compgen -G "$exe_folder_path/*.bak" > /dev/null; then
   echo "Restoring backups..."
   for backup in "$exe_folder_path"/*.bak; do
@@ -122,8 +127,6 @@ fi
 
 echo "Uninstallation complete!"
 
-# Execute original command (without Wine overrides)
-# Filter out leading -- separators (from Steam launch options)
 while [[ $# -gt 0 && "$1" == "--" ]]; do
   shift
 done

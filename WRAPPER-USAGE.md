@@ -105,7 +105,7 @@ cd ~/dlss
 
 Then add to Steam launch options:
 ```
-WINEDLLOVERRIDES="version=n,b;nvapi64=n,b" %COMMAND%
+WINEDLLOVERRIDES="version=n,b" %COMMAND%
 ```
 
 ## Troubleshooting
@@ -156,12 +156,13 @@ for f in *.bak; do mv "$f" "${f%.bak}"; done
 ├── install-{method}-wrapper.sh      ← 9 per-method wrappers
 ├── install.sh                       ← Traditional manual installer
 ├── uninstall.sh                     ← Traditional uninstaller
-├── version.dll                      ← v4.0 main file (28MB)
-├── _nvngx.dll                       ← v3.x base runtime
-├── nvngx-wrapper.dll
-├── nvapi64-proxy.dll
+├── version.dll                      ← OptiScaler loader (24MB)
+├── fakenvapi.dll                    ← NVAPI compatibility layer
 ├── dlssg_to_fsr3_amd_is_better.dll
-└── dlss-finder.bin
+├── libxess.dll
+├── amd_fidelityfx_framegeneration_dx12.dll
+├── D3D12_Optiscaler/D3D12Core.dll
+└── plugins/OptiPatcher.asi
 ```
 
 ### Game Directory (After Install)
@@ -170,15 +171,20 @@ for f in *.bak; do mv "$f" "${f%.bak}"; done
 ├── game.exe
 ├── {method}.dll                     ← version.dll renamed to injection method
 ├── {method}.dll.bak                 ← Original backup (if existed)
-├── _nvngx.dll
-├── nvngx-wrapper.dll
-├── nvapi64-proxy.dll
+├── fakenvapi.dll
 ├── dlssg_to_fsr3_amd_is_better.dll
-├── dlss-finder.bin
-├── nvngx.ini                        ← Config file
-├── dlss-enabler.log                 ← Runtime logs
-├── dlssg-to-fsr3.log
-└── nvngx.log
+├── libxell.dll
+├── libxess.dll
+├── libxess_dx11.dll
+├── libxess_fg.dll
+├── amd_fidelityfx_dx12.dll
+├── amd_fidelityfx_framegeneration_dx12.dll
+├── amd_fidelityfx_upscaler_dx12.dll
+├── amd_fidelityfx_vk.dll
+├── OptiScaler.ini                   ← Config file
+├── fakenvapi.ini                    ← Config file
+├── D3D12_Optiscaler/D3D12Core.dll
+└── plugins/OptiPatcher.asi
 ```
 
 ## Examples

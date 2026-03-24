@@ -1,5 +1,7 @@
 *.log
 *.ini
+!OptiScaler.ini
+!fakenvapi.ini
 .DS_Store
 .vscode/
 .idea/
