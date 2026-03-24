@@ -33,10 +33,6 @@ Then add to Steam launch options:
 ~/dlss/install --method=winmm %command%
 ~/dlss/install --method=dxgi %command%
 
-# Per-method wrappers (alternative)
-~/dlss/install-winmm %command%
-~/dlss/install-dxgi %command%
-
 # Uninstall
 ~/dlss/uninstall %command%
 ```
@@ -111,7 +107,6 @@ Plus automatic **Unreal Engine** game detection for any UE4/UE5 title.
 ### Wrapper Scripts (~/dlss/ installation only)
 - `install` - Main wrapper with flag support
 - `uninstall` - Uninstaller with backup restore
-- `install-{method}` - Per-method wrappers (9 variants)
 
 ## Configuration
 

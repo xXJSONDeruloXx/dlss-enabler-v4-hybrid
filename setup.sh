@@ -31,19 +31,10 @@ echo "Setting up wrapper scripts..."
 ln -sf "$INSTALL_DIR/install-wrapper.sh" "$INSTALL_DIR/install"
 ln -sf "$INSTALL_DIR/uninstall-wrapper.sh" "$INSTALL_DIR/uninstall"
 
-# Create per-method wrapper symlinks
-METHODS=("version" "winmm" "d3d11" "d3d12" "dinput8" "dxgi" "wininet" "winhttp" "dbghelp")
-for method in "${METHODS[@]}"; do
-  ln -sf "$INSTALL_DIR/install-${method}-wrapper.sh" "$INSTALL_DIR/install-${method}"
-done
-
 # Make all scripts executable
 chmod +x "$INSTALL_DIR"/*.sh
 chmod +x "$INSTALL_DIR/install"
 chmod +x "$INSTALL_DIR/uninstall"
-for method in "${METHODS[@]}"; do
-  chmod +x "$INSTALL_DIR/install-${method}"
-done
 
 echo ""
 echo "Installation complete!"
@@ -65,11 +56,6 @@ echo ""
 echo "Available methods:"
 echo "  version, winmm, d3d11, d3d12, dinput8, dxgi,"
 echo "  wininet, winhttp, dbghelp"
-echo ""
-echo "Per-method wrappers (alternative):"
-echo "  ~/dlss/install-winmm %command%"
-echo "  ~/dlss/install-dxgi %command%"
-echo "  (and 7 more...)"
 echo ""
 echo "Manual installation (traditional):"
 echo "  cd ~/dlss"

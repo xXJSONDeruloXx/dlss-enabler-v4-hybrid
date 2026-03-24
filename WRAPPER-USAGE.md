@@ -26,20 +26,6 @@ This creates `~/dlss/` with all necessary files.
 ~/dlss/install --method=d3d11 %command%
 ```
 
-### Per-Method Wrappers (Alternative)
-
-```
-~/dlss/install-winmm %command%
-~/dlss/install-dxgi %command%
-~/dlss/install-d3d11 %command%
-~/dlss/install-d3d12 %command%
-~/dlss/install-dinput8 %command%
-~/dlss/install-version %command%
-~/dlss/install-wininet %command%
-~/dlss/install-winhttp %command%
-~/dlss/install-dbghelp %command%
-```
-
 ## Uninstallation
 
 ### Temporary Uninstall (Test)
@@ -150,10 +136,8 @@ for f in *.bak; do mv "$f" "${f%.bak}"; done
 ~/dlss/
 ├── install                           ← Symlink to install-wrapper.sh
 ├── uninstall                        ← Symlink to uninstall-wrapper.sh
-├── install-{method}                 ← 9 per-method symlinks
 ├── install-wrapper.sh               ← Main wrapper script
 ├── uninstall-wrapper.sh             ← Uninstaller script
-├── install-{method}-wrapper.sh      ← 9 per-method wrappers
 ├── install.sh                       ← Traditional manual installer
 ├── uninstall.sh                     ← Traditional uninstaller
 ├── version.dll                      ← v4.0 main file (28MB)
@@ -190,11 +174,6 @@ Game Properties → Launch Options:
 ~/dlss/install --method=winmm %command%
 ```
 
-Or:
-```
-~/dlss/install-winmm %command%
-```
-
 ### Example 2: Witcher 3
 
 ```
@@ -210,11 +189,6 @@ Or just:
 
 ```
 ~/dlss/install --method=dxgi %command%
-```
-
-Or:
-```
-~/dlss/install-dxgi %command%
 ```
 
 ### Example 4: Unreal Engine Game (e.g., Satisfactory)
