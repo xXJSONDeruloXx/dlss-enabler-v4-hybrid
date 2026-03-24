@@ -126,12 +126,14 @@ backup_if_exists "$exe_folder_path/d3d11.dll"
 backup_if_exists "$exe_folder_path/d3d12.dll"
 backup_if_exists "$exe_folder_path/nvapi64.dll"
 backup_if_exists "$exe_folder_path/nvapi64-proxy.dll"
+backup_if_exists "$exe_folder_path/amd_fidelityfx_upscaler_dx12.dll"
 
 # Copy v3.x base files
 cp -f "$SCRIPT_DIR/_nvngx.dll" "$exe_folder_path/"
 cp -f "$SCRIPT_DIR/nvngx-wrapper.dll" "$exe_folder_path/"
 cp -f "$SCRIPT_DIR/nvapi64-proxy.dll" "$exe_folder_path/"
 cp -f "$SCRIPT_DIR/dlssg_to_fsr3_amd_is_better.dll" "$exe_folder_path/"
+cp -f "$SCRIPT_DIR/amd_fidelityfx_upscaler_dx12.dll" "$exe_folder_path/"
 cp -f "$SCRIPT_DIR/dlss-finder.bin" "$exe_folder_path/"
 
 # Copy placeholder logs

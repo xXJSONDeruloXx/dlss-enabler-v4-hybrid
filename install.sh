@@ -89,6 +89,7 @@ backup_if_exists "$GAME_DIR/d3d12.dll"
 # Less common but possible
 backup_if_exists "$GAME_DIR/nvapi64.dll"
 backup_if_exists "$GAME_DIR/nvapi64-proxy.dll"
+backup_if_exists "$GAME_DIR/amd_fidelityfx_upscaler_dx12.dll"
 
 echo ""
 
@@ -98,6 +99,7 @@ cp -v "$SCRIPT_DIR/_nvngx.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvngx-wrapper.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/nvapi64-proxy.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/dlssg_to_fsr3_amd_is_better.dll" "$GAME_DIR/"
+cp -v "$SCRIPT_DIR/amd_fidelityfx_upscaler_dx12.dll" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/dlss-finder.bin" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/dlss-enabler.log" "$GAME_DIR/"
 cp -v "$SCRIPT_DIR/dlssg-to-fsr3.log" "$GAME_DIR/"
