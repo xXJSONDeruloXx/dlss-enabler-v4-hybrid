@@ -156,7 +156,7 @@ for f in *.bak; do mv "$f" "${f%.bak}"; done
 ├── install-{method}-wrapper.sh      ← 9 per-method wrappers
 ├── install.sh                       ← Traditional manual installer
 ├── uninstall.sh                     ← Traditional uninstaller
-├── version.dll                      ← v4.0 main file (27MB)
+├── version.dll                      ← v4.0 main file (28MB)
 ├── _nvngx.dll                       ← v3.x base runtime
 ├── nvngx-wrapper.dll
 ├── nvapi64-proxy.dll

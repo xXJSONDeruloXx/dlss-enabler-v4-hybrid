@@ -99,7 +99,7 @@ Plus automatic **Unreal Engine** game detection for any UE4/UE5 title.
 ## Files Included
 
 ### DLSS Enabler v4.0
-- `version.dll` (27MB) - Main loader with OptiScaler and DXGI hooks built-in
+- `version.dll` (28MB) - Main loader with OptiScaler and DXGI hooks built-in
 
 ### DLSS Enabler v3.x Base Runtime
 - `_nvngx.dll` - NvAPI wrapper

@@ -3,7 +3,7 @@
 ## Overview
 
 **File:** `version.dll` (DLSS_Enabler.dll renamed)  
-**Size:** 27 MB  
+**Size:** 28 MB  
 **Type:** All-in-one injection DLL  
 **Version:** 4.0.0.2+  
 
