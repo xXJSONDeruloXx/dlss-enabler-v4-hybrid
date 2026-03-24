@@ -35,7 +35,7 @@ This proxy ensures that:
 
 **When injection method = dxgi:**
 - `version.dll` renamed to `dxgi.dll`
-- 27 MB all-in-one loader
+- 28 MB all-in-one loader
 - Replaces this 72 KB proxy
 
 **This document describes the v3.x 72 KB proxy version.**
@@ -197,7 +197,7 @@ Example: Using `version.dll` injection
 
 ```
 game/
-├── version.dll (v4.0 - 27MB)
+├── version.dll (v4.0 - 28MB)
 ├── dxgi.dll (v3.x proxy - 72KB) ← This file
 ├── _nvngx.dll
 ├── nvapi64-proxy.dll
@@ -219,7 +219,7 @@ This 72 KB file is **NOT copied**. Instead, `version.dll` is renamed to `dxgi.dl
 
 ```
 game/
-├── dxgi.dll (v4.0 - 27MB, renamed from version.dll)
+├── dxgi.dll (v4.0 - 28MB, renamed from version.dll)
 ├── _nvngx.dll
 ├── nvapi64-proxy.dll
 └── dlssg_to_fsr3_amd_is_better.dll

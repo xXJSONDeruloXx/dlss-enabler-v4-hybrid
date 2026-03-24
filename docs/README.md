@@ -8,7 +8,7 @@ This directory contains comprehensive reverse engineering documentation for all 
 
 ### Core v4.0 Component
 
-- **[version.dll](version-dll.md)** - Main DLSS Enabler v4.0 loader with OptiScaler, frame generation, and NvAPI support (27 MB)
+- **[version.dll](version-dll.md)** - Main DLSS Enabler v4.0 loader with OptiScaler, frame generation, and NvAPI support (28 MB)
 
 ### v3.x Base Runtime Components
 
@@ -41,7 +41,7 @@ version.dll (injection: version/winmm/d3d11/dxgi/etc.)
 
 | Component | Purpose | Size | Required for AMD/Intel |
 |-----------|---------|------|------------------------|
-| version.dll | Main loader + OptiScaler + DXGI | 27 MB | Yes |
+| version.dll | Main loader + OptiScaler + DXGI | 28 MB | Yes |
 | _nvngx.dll | NGX API wrapper | 186 KB | Yes |
 | nvngx-wrapper.dll | NGX compatibility layer | 186 KB | Yes |
 | nvapi64-proxy.dll | GPU spoofing | 1.3 MB | Yes |
@@ -92,7 +92,7 @@ Output to display
 ### Injection Method Conflict Resolution
 
 When `injection_method = dxgi`:
-- v4.0 version.dll is renamed to dxgi.dll (27 MB)
+- v4.0 version.dll is renamed to dxgi.dll (28 MB)
 - v3.x dxgi.dll is NOT copied (conflict avoidance)
 - v4.0 handles both injection and adapter enumeration
 
